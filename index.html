@@ -321,13 +321,7 @@
             <label for="itemSelect">Asset Assignment Selection</label>
             <select id="itemSelect" class="item-select">
                 <option value="" disabled selected>-- Select an Item --</option>
-                <option value="Monitor">Monitor</option>
-                <option value="Projector">Projector</option>
-                <option value="Desktop">Desktop</option>
-                <option value="HDMI Cable">HDMI Cable</option>
-                <option value="Printer">Printer</option>
-                <option value="Laptop">Sony Wireless Mic</option>
-            </select>
+                </select>
         </div>
 
         <div class="action-buttons">
@@ -363,10 +357,37 @@
 </div>
 
 <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbxG-SzNuos2dLCEinMRUdxZACF-JOrWsLvfIU2Mbng8KJX_iATbA4I3I_Vbb2gMlog/exec";
+    const scriptURL = "https://script.google.com/macros/s/AKfycbzmUP-LR_nV9We-Ny2YmM9yXhNsm8r3ZIx5jwSfCdUFzjN8u77kY0Lnw5j20Xd1vNdJ/exec";
+
+    // Set up your base inventory and stock allocations here
+    let inventoryStock = {
+        "Monitor": 5,
+        "Projector": 3,
+        "Desktop": 4,
+        "HDMI Cable": 15,
+        "Printer": 2,
+        "Sony Wireless Mic": 8
+    };
 
     let inventoryLog = [];
     let metrics = { borrowed: 0, returned: 0 };
+
+    // Initial runtime build to populate the drop-down selector options with stock levels
+    function renderDropdownOptions() {
+        let selectField = document.getElementById("itemSelect");
+        let selectedValue = selectField.value; // Save current user choice if any
+        
+        selectField.innerHTML = '<option value="" disabled selected>-- Select an Item --</option>';
+        
+        for (const [item, quantity] of Object.entries(inventoryStock)) {
+            let optionElement = document.createElement("option");
+            optionElement.value = item;
+            optionElement.innerText = `${item} (Stock: ${quantity})`;
+            selectField.appendChild(optionElement);
+        }
+        
+        if (selectedValue) selectField.value = selectedValue;
+    }
 
     /* PROCESS INVENTORY ACTION ITEM */
     function processLog(statusType) {
@@ -374,7 +395,7 @@
         let selectField = document.getElementById("itemSelect");
         
         let activeStaff = staffField.value.trim();
-        let itemValue = selectField.value; // Extracts selected item option string
+        let itemValue = selectField.value; 
 
         if (activeStaff === "") {
             showMessage("Transaction halted. Please type your name before registering logs.");
@@ -384,6 +405,17 @@
         if (!itemValue || itemValue === "") {
             showMessage("Transaction halted. Please select an item from the dropdown array list.");
             return;
+        }
+
+        // Logic check: Reduce or Increase item quantities safely
+        if (statusType === 'Borrowed') {
+            if (inventoryStock[itemValue] <= 0) {
+                showMessage(`Transaction Denied: "${itemValue}" is currently out of stock!`);
+                return;
+            }
+            inventoryStock[itemValue]--; // Decrement inventory calculation
+        } else if (statusType === 'Returned') {
+            inventoryStock[itemValue]++; // Increment inventory calculation
         }
 
         const logPayload = {
@@ -404,9 +436,11 @@
         document.getElementById("returnCount").innerText = metrics.returned;
 
         updateInventoryTable();
+        renderDropdownOptions(); // Refresh quantities inside the select element menu
+        
         showMessage(`Dispatched: Recorded "${itemValue}" by ${activeStaff} as ${statusType.toUpperCase()}.`);
         
-        // Reset the item dropdown choice back to default placeholder index for clean entry loops
+        // Reset choice selector cleanly back to zero position placeholder
         selectField.selectedIndex = 0; 
 
         (() => {
@@ -450,6 +484,9 @@
             `;
         });
     }
+
+    // Run when the dashboard page loads initially
+    renderDropdownOptions();
 </script>
 
 </body>
