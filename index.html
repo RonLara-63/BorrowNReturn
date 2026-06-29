@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EGP Premium Inventory Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f6f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+
+        .dashboard-wrapper {
+            width: 100%;
+            max-width: 1100px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+        }
+
+        @media(min-width: 850px) {
+            .dashboard-wrapper {
+                grid-template-columns: 420px 1fr;
+            }
+        }
+
+        /* Card Base Component */
+        .panel-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(160, 175, 195, 0.15);
+            border: 1px solid #e2e8f0;
+            height: fit-content;
+        }
+
+        /* Profile Input Header Component */
+        .profile-header {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: #f8fafc;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 1px solid #e8edf3;
+        }
+
+        .profile-title-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .profile-title-bar p {
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .system-logo {
+            font-size: 14px;
+            font-weight: 800;
+            color: #2563eb;
+            background: #eff6ff;
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        .staff-input {
+            width: 100%;
+            padding: 10px 14px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+            background-color: #ffffff;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .staff-input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Counters Section */
+        .counter-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .counter-box {
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .counter-box span {
+            font-size: 12px;
+            text-transform: uppercase;
+            opacity: 0.9;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .counter-box div {
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .count-borrowed { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+        .count-returned { background: linear-gradient(135deg, #10b981, #047857); }
+
+        /* Form Inputs */
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 8px;
+        }
+
+        /* Universal styling for modern dropdown select */
+        select.item-select {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 15px;
+            font-weight: 600;
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            outline: none;
+            transition: all 0.2s;
+            color: #0f172a;
+            background-color: #f8fafc;
+            cursor: pointer;
+            appearance: none; /* Removes standard browser arrow for a cleaner look */
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 16px;
+        }
+
+        select.item-select:focus {
+            border-color: #2563eb;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px 14px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+            background-color: #ffffff;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Controls / Buttons */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.05);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-borrow { background-color: #ef4444; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2); }
+        .btn-return { background-color: #10b981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
+
+        /* Status Banner Box */
+        #message {
+            padding: 12px 16px;
+            background: #f1f5f9;
+            border-left: 4px solid #475569;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        /* Ledger Panel Right Side */
+        .ledger-panel h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-container {
+            max-height: 480px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            text-align: left;
+        }
+
+        table th {
+            background: #f8fafc;
+            color: #64748b;
+            font-weight: 700;
+            padding: 14px 16px;
+            border-bottom: 1px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+        }
+
+        table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+            background: #ffffff;
+        }
+
+        table tbody tr:hover td {
+            background: #f8fafc;
+        }
+
+        /* Custom Badges */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-borrowed { background-color: #fee2e2; color: #ef4444; }
+        .badge-returned { background-color: #d1fae5; color: #10b981; }
+
+        .text-center { text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-wrapper">
+
+    <div class="panel-card">
+        <div class="profile-header">
+            <div class="profile-title-bar">
+                <p>Operator Designation</p>
+                <div class="system-logo">INV</div>
+            </div>
+            <input type="text" id="staffInput" placeholder="Type your name here...">
+        </div>
+
+        <div class="counter-grid">
+            <div class="counter-box count-borrowed">
+                <span>Borrowed</span>
+                <div id="borrowCount">0</div>
+            </div>
+            <div class="counter-box count-returned">
+                <span>Returned</span>
+                <div id="returnCount">0</div>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="itemSelect">Asset Assignment Selection</label>
+            <select id="itemSelect" class="item-select">
+                <option value="" disabled selected>-- Select an Item --</option>
+                <option value="Monitor">Monitor</option>
+                <option value="Projector">Projector</option>
+                <option value="Desktop">Desktop</option>
+                <option value="HDMI Cable">HDMI Cable</option>
+                <option value="Printer">Printer</option>
+                <option value="Laptop">Sony Wireless Mic</option>
+            </select>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn-borrow" onclick="processLog('Borrowed')">Borrow</button>
+            <button class="btn-return" onclick="processLog('Returned')">Return</button>
+        </div>
+
+        <div id="message">
+            System initialized. Please register your name and select an item to track.
+        </div>
+    </div>
+
+    <div class="panel-card ledger-panel">
+        <h3>Live Inventory Ledger</h3>
+        
+        <div class="table-container">
+            <table id="logTable">
+                <thead>
+                    <tr>
+                        <th class="text-center" style="width: 60px;">No.</th>
+                        <th>Timestamp</th>
+                        <th>Operator</th>
+                        <th>Item Description</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const scriptURL = "https://script.google.com/macros/s/AKfycbxG-SzNuos2dLCEinMRUdxZACF-JOrWsLvfIU2Mbng8KJX_iATbA4I3I_Vbb2gMlog/exec";
+
+    let inventoryLog = [];
+    let metrics = { borrowed: 0, returned: 0 };
+
+    /* PROCESS INVENTORY ACTION ITEM */
+    function processLog(statusType) {
+        let staffField = document.getElementById("staffInput");
+        let selectField = document.getElementById("itemSelect");
+        
+        let activeStaff = staffField.value.trim();
+        let itemValue = selectField.value; // Extracts selected item option string
+
+        if (activeStaff === "") {
+            showMessage("Transaction halted. Please type your name before registering logs.");
+            return;
+        }
+
+        if (!itemValue || itemValue === "") {
+            showMessage("Transaction halted. Please select an item from the dropdown array list.");
+            return;
+        }
+
+        const logPayload = {
+            staff: activeStaff,
+            itemName: itemValue,
+            status: statusType
+        };
+
+        const displayPayload = {
+            ...logPayload,
+            datetime: new Date().toLocaleString([], {hour: '2-digit', minute:'2-digit', second:'2-digit', month:'short', day:'numeric'})
+        };
+
+        inventoryLog.unshift(displayPayload); 
+        
+        statusType === 'Borrowed' ? metrics.borrowed++ : metrics.returned++;
+        document.getElementById("borrowCount").innerText = metrics.borrowed;
+        document.getElementById("returnCount").innerText = metrics.returned;
+
+        updateInventoryTable();
+        showMessage(`Dispatched: Recorded "${itemValue}" by ${activeStaff} as ${statusType.toUpperCase()}.`);
+        
+        // Reset the item dropdown choice back to default placeholder index for clean entry loops
+        selectField.selectedIndex = 0; 
+
+        (() => {
+            if (!scriptURL) return;
+            
+            fetch(scriptURL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams(logPayload)
+            })
+            .then(() => console.log("Cloud server synced."))
+            .catch(err => console.error("Cloud synchronization mismatch error:", err));
+        })();
+    }
+
+    function showMessage(msg) {
+        document.getElementById("message").innerHTML = msg;
+    }
+
+    /* RENDER COMPACT TABLE ROWS */
+    function updateInventoryTable() {
+        let tbody = document.querySelector("#logTable tbody");
+        tbody.innerHTML = "";
+
+        inventoryLog.forEach((item, index) => {
+            let styleClass = (item.status === 'Returned') ? 'badge-returned' : 'badge-borrowed';
+            
+            tbody.innerHTML += `
+                <tr>
+                    <td class="text-center" style="color: #64748b; font-weight: 600;">${inventoryLog.length - index}</td>
+                    <td style="font-size: 13px; color: #64748b;">${item.datetime}</td>
+                    <td><span style="font-size: 13px; color: #475569; font-weight: 600;">${item.staff}</span></td>
+                    <td><strong>${item.itemName}</strong></td>
+                    <td>
+                        <span class="status-badge ${styleClass}">
+                            ${item.status}
+                        </span>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+</script>
+
+</body>
+</html>
